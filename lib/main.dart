@@ -3,11 +3,87 @@
 // BUILD: flutter pub get && flutter build apk --release
 
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'dart:io';
+
+class SharedPreferences {
+  static final Map<String, dynamic> _data = {};
+  static Future<SharedPreferences> getInstance() async => SharedPreferences();
+  List<String>? getStringList(String key) => (_data[key] as List?)?.cast<String>();
+  Future<bool> setStringList(String key, List<String> value) async {
+    _data[key] = value;
+    return true;
+  }
+  Future<bool> remove(String key) async {
+    _data.remove(key);
+    return true;
+  }
+}
+
+class WebUri {
+  final String _value;
+  WebUri(this._value);
+  @override
+  String toString() => _value;
+}
+
+class URLRequest {
+  final WebUri? url;
+  URLRequest({this.url});
+}
+
+class InAppWebViewController {
+  Future<void> loadUrl({URLRequest? urlRequest}) async {}
+  Future<void> goBack() async {}
+  Future<void> goForward() async {}
+  Future<void> reload() async {}
+  Future<void> evaluateJavascript({required String source}) async {}
+}
+
+class InAppWebView extends StatefulWidget {
+  final URLRequest? initialUrlRequest;
+  final void Function(InAppWebViewController controller)? onWebViewCreated;
+  final void Function(InAppWebViewController controller, WebUri? url)? onLoadStop;
+
+  const InAppWebView({
+    Key? key,
+    this.initialUrlRequest,
+    this.onWebViewCreated,
+    this.onLoadStop,
+  }) : super(key: key);
+
+  @override
+  State<InAppWebView> createState() => _InAppWebViewState();
+}
+
+class _InAppWebViewState extends State<InAppWebView> {
+  final _controller = InAppWebViewController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.onWebViewCreated != null) {
+      widget.onWebViewCreated!(_controller);
+    }
+    if (widget.onLoadStop != null) {
+      widget.onLoadStop!(_controller, widget.initialUrlRequest?.url);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Color(0xFF202124),
+      child: Center(
+        child: Text(
+          widget.initialUrlRequest?.url?.toString() ?? '',
+          style: TextStyle(color: Colors.white54),
+        ),
+      ),
+    );
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
