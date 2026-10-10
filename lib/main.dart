@@ -1,31 +1,13 @@
-// AUX BROWSER
-// PUBSPEC DEPENDENCIES NEEDED: flutter_inappwebview: ^6.0.0 shared_preferences: ^2.2.2
-// BUILD: flutter pub get && flutter build apk --release
-
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'dart:io';
 
-class SharedPreferences {
-  static final Map<String, dynamic> _data = {};
-  static Future<SharedPreferences> getInstance() async => SharedPreferences();
-  List<String>? getStringList(String key) => (_data[key] as List?)?.cast<String>();
-  Future<bool> setStringList(String key, List<String> value) async {
-    _data[key] = value;
-    return true;
-  }
-  Future<bool> remove(String key) async {
-    _data.remove(key);
-    return true;
-  }
-}
-
 class WebUri {
-  final String _value;
-  WebUri(this._value);
+  final String _url;
+  WebUri(this._url);
   @override
-  String toString() => _value;
+  String toString() => _url;
 }
 
 class URLRequest {
@@ -34,11 +16,11 @@ class URLRequest {
 }
 
 class InAppWebViewController {
-  Future<void> loadUrl({URLRequest? urlRequest}) async {}
+  Future<void> loadUrl({required URLRequest urlRequest}) async {}
   Future<void> goBack() async {}
   Future<void> goForward() async {}
   Future<void> reload() async {}
-  Future<void> evaluateJavascript({required String source}) async {}
+  Future<dynamic> evaluateJavascript({required String source}) async {}
 }
 
 class InAppWebView extends StatefulWidget {
@@ -58,30 +40,50 @@ class InAppWebView extends StatefulWidget {
 }
 
 class _InAppWebViewState extends State<InAppWebView> {
-  final _controller = InAppWebViewController();
+  late InAppWebViewController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = InAppWebViewController();
     if (widget.onWebViewCreated != null) {
       widget.onWebViewCreated!(_controller);
-    }
-    if (widget.onLoadStop != null) {
-      widget.onLoadStop!(_controller, widget.initialUrlRequest?.url);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color(0xFF202124),
+      color: const Color(0xFF202124),
       child: Center(
-        child: Text(
-          widget.initialUrlRequest?.url?.toString() ?? '',
-          style: TextStyle(color: Colors.white54),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.public, color: Colors.white54, size: 48),
+            const SizedBox(height: 8),
+            Text(
+              widget.initialUrlRequest?.url?.toString() ?? '',
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
+  }
+}
+
+class SharedPreferences {
+  static final Map<String, dynamic> _data = {};
+  static Future<SharedPreferences> getInstance() async => SharedPreferences();
+  List<String>? getStringList(String key) => (_data[key] as List?)?.cast<String>();
+  Future<bool> setStringList(String key, List<String> value) async {
+    _data[key] = value;
+    return true;
+  }
+  Future<bool> remove(String key) async {
+    _data.remove(key);
+    return true;
   }
 }
 
